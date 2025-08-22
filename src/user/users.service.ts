@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { CreateUserDto } from './dto/user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) {}
+  ) { }
 
   // Create new user
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -21,7 +21,7 @@ export class UsersService {
     }
     
     // Hash the password
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const hashedPassword = await bcrypt.hash(createUserDto.password!, 10);
     
     // Create and save the new user
     const user = this.usersRepository.create({
@@ -50,7 +50,7 @@ export class UsersService {
 
     return user;
   }
-  
+
   // Find user by email
   async findByEmail(email: string): Promise<User | null> {
     return await this.usersRepository.findOne({ where: { email } });
@@ -63,4 +63,18 @@ export class UsersService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
   }
+
+  async update(id: number, updateData: Partial<User>): Promise<User> {
+    const result = await this.usersRepository.update(id, updateData);
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    const updatedUser = await this.usersRepository.findOne({ where: { id } });
+    // TypeScript knows updatedUser exists because update succeeded, but we double-check
+    if (!updatedUser) {
+      throw new NotFoundException(`User with ID ${id} not found after update`);
+    }
+    return updatedUser as User; // Explicit type assertion for TypeScript
+  }
+
 }

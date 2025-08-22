@@ -1,12 +1,26 @@
-import { IsEnum, IsOptional, IsObject, IsString, IsArray, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsEnum, IsObject, IsArray, IsDate } from 'class-validator';
 import { TaskStatus, TaskPriority } from '../entities/task.entity';
 
-export class UpdateTaskDto {
-  @IsOptional()
-  title?: string;
+export class CreateTaskDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
 
   @IsOptional()
+  @IsString()
   description?: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  userId: number;
+
+  @IsOptional()
+  @IsString()
+  calendarEventId?: string;
+
+  @IsOptional()
+  @IsDate()
+  dueDate?: Date; // Changed to Date | undefined to match Task entity
 
   @IsOptional()
   @IsEnum(TaskStatus)
@@ -31,9 +45,5 @@ export class UpdateTaskDto {
 
   @IsOptional()
   @IsString()
-  notionId?: string;
-
-  @IsOptional()
-  @IsString()
-  calendarEventId?: string;
+  notionId?: string; // Added to support notionId
 }
